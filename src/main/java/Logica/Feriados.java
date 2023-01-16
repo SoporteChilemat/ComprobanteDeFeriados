@@ -70,9 +70,9 @@ public class Feriados {
 //            arrPersonas = new ArrayList<>(); // creacion del array global
 //            arrPersonasInicio = new ArrayList<>();
 
-            try {// detecta y controla cualquier incidencia
-
-                ArrayList<Personas> descargarLectura = descargaLectura(arrPersonas, transformarExcelaArray(System.getProperty("user.dir") + "//LISTADO FINAL.xlsx"));// creo un arrayList que será lo que retorna el metodo descargaLectura
+            try { // detecta y controla cualquier incidencia
+                ArrayList<PersonasInicio> arrPersonasListado = transformarExcelaArray(System.getProperty("user.dir") + "//LISTADO FINAL.xlsx");
+                ArrayList<Personas> descargarLectura = descargaLectura(arrPersonas, arrPersonasListado);// creo un arrayList que será lo que retorna el metodo descargaLectura
                 ArrayList<Personas> manejoFecha = manejoFecha(descargarLectura);
                 if (aviso == false) {
                     VentanaPrincipal.info.setText("Proceso terminado!");
@@ -88,6 +88,7 @@ public class Feriados {
 
     }
 //----------------------------------------------------------------------------------------------------------------------------------------
+
     public static int devuelveAño(String fecha) {
         String[] split = fecha.split("/");
         String name = split[2];
@@ -179,7 +180,7 @@ public class Feriados {
     }
 //---------------------------------------------------------------------------------------------------------------------------
 
-    public static ArrayList<Personas> descargaLectura(ArrayList<Personas> arrPersonas, ArrayList<PersonasInicio> transformarExcelaArray) throws IOException {
+    public static ArrayList<Personas> descargaLectura(ArrayList<Personas> arrPersonas, ArrayList<PersonasInicio> arrPersonasListado) throws IOException {
         VentanaPrincipal.leerydescargarbutton.setEnabled(false);
         VentanaPrincipal.progresonum.setText("");
         driver = chromeOption();
@@ -212,14 +213,14 @@ public class Feriados {
         driver.findElement(By.xpath("//*[@id=\"SubBarraMenu2_2\"]/tbody/tr/td[7]/a")).click();
 
         int length = 0;
-        for (int q = 0; q < 134; q++) {
-            //for (int q = 0; q < 2; q++) {
+        for (int q = 0; q < arrPersonasListado.size(); q++) {
+
             if (aviso == false) {
                 VentanaPrincipal.info.setText("Proceso interrumpido !");
                 VentanaPrincipal.leerydescargarbutton.setEnabled(true);
                 break;
             }
-            PersonasInicio loquito = transformarExcelaArray.get(q);
+            PersonasInicio loquito = arrPersonasListado.get(q);
 
             try {
                 try {
@@ -237,11 +238,9 @@ public class Feriados {
 
                     split = text.split("\n");
 
-                    VentanaPrincipal.progresonashe.setMaximum(transformarExcelaArray.size());
+                    VentanaPrincipal.progresonashe.setMaximum(arrPersonasListado.size());
                     VentanaPrincipal.info.setText("Leyendo informacion");
                 }
-                
-                
 
                 String trim = split[q].trim();
                 System.out.println("i " + q);
@@ -250,28 +249,30 @@ public class Feriados {
                 length = split.length;
                 System.out.println("length " + length);
                 //--------------------------------- Progreso en numeros---------------------------------------------                  
-                String progresonum = String.valueOf(transformarExcelaArray.size());
+                String progresonum = String.valueOf(arrPersonasListado.size());
 
                 VentanaPrincipal.progresonum.setText(q + 1 + " / " + progresonum);
                 ArrayList<Integer> indicesIguales = new ArrayList<>();
                 ArrayList<String> fechasInicio = new ArrayList<>();
                 //------------------------FOR PARA ---------------------------------------------------------------------
                 for (int k = 0; k < split.length; k++) {
-                    String nombre = split[k];
-                    String nombretrim = nombre.trim();
+                    String nombrex = split[k];
+                    String nombretrim = nombrex.trim();
                     String nombres = loquito.getNombres();
                     String[] split1 = nombres.split(" ");
                     String trim1 = split1[0].trim();
                     String trim2 = split1[1].trim();
 
                     String completName = loquito.getApellido1() + " " + trim1 + " " + trim2;
+                    completName = completName.trim();
 
                     String fechaInicio = loquito.getFechaInicio();
 
                     if (completName.equals(nombretrim)) {
                         indicesIguales.add(k);
+                        System.out.println("k " + k);
                         fechasInicio.add(fechaInicio);
-                        System.out.println("nombre lista nubox " + nombre);
+                        System.out.println("nombre lista nubox " + nombretrim);
                         System.out.println("nombre lista final " + completName);
                         System.out.println("fechaInicio " + fechaInicio);
                     }
@@ -284,14 +285,14 @@ public class Feriados {
                     System.out.println(indice);
                     try {
                         wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[@id=\"Funcionario\"]")));
-                        Select select = new Select(wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[@id=\"2io\"]"))));
+                        Select select = new Select(wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//*[@id=\"Funcionario\"]"))));
                         select.selectByIndex(indice);
 
                         System.out.println("F");
                         wait = new WebDriverWait(driver, Duration.ofSeconds(3));
                         wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//*[@id=\"Footer\"]/table/tbody/tr/td[3]/table/tbody/tr/td[2]")));
                         driver.findElement(By.xpath("//*[@id=\"Footer\"]/table/tbody/tr/td[3]/table/tbody/tr/td[2]")).click();
-                        
+
                         wait = new WebDriverWait(driver, Duration.ofSeconds(3));
                         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("pdfviewer")));
 
@@ -430,7 +431,9 @@ public class Feriados {
 
             //break;
         }
-        System.out.println(arrPersonas.size() + "LARGO DE ARREGLO PERSONAS!!!!!!!AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+        
+        driver.quit();
+        
         return arrPersonas;
     }
 //---------------------------------------------------------------------------------------------------------------------------
@@ -573,7 +576,7 @@ public class Feriados {
             System.out.println(get.getFechaInicio());
 
         }
-        System.out.println(arrPersonasInicio.size()+"--------------------------------------------------------------------------------");
+        System.out.println(arrPersonasInicio.size() + "--------------------------------------------------------------------------------");
 
         return arrPersonasInicio;
     }
@@ -591,7 +594,7 @@ public class Feriados {
         chromeOptionsMap.put("plugins.always_open_pdf_externally", true);
         chromeOptionsMap.put("download.default_directory", System.getProperty("user.dir") + "\\PDF");
         options.setExperimentalOption("prefs", chromeOptionsMap);
-        //options.addArguments("--headless");
+        options.addArguments("--headless");
 
         WebDriverManager.chromedriver().setup();
         WebDriver driver = new ChromeDriver(options);
