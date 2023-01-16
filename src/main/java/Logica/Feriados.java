@@ -226,6 +226,7 @@ public class Feriados {
                 try {
                     driver.switchTo().frame("Contenido");
                 } catch (Exception ex) {
+//                    Logger.getLogger(Feriados.class.getName()).log(Level.SEVERE, null, ex);
                 }
 
                 if (q == 0) {
@@ -259,9 +260,22 @@ public class Feriados {
                     String nombrex = split[k];
                     String nombretrim = nombrex.trim();
                     String nombres = loquito.getNombres();
+
+//                    System.out.println("nombres " + nombres);
                     String[] split1 = nombres.split(" ");
-                    String trim1 = split1[0].trim();
-                    String trim2 = split1[1].trim();
+
+                    String trim1 = "";
+                    try {
+                        trim1 = split1[0].trim();
+                    } catch (Exception ex) {
+
+                    }
+                    String trim2 = "";
+                    try {
+                        trim2 = split1[1].trim();
+                    } catch (Exception ex) {
+
+                    }
 
                     String completName = loquito.getApellido1() + " " + trim1 + " " + trim2;
                     completName = completName.trim();
@@ -283,26 +297,25 @@ public class Feriados {
 
                 indicesIguales.stream().forEach((Integer indice) -> {
                     System.out.println(indice);
+
+                    System.out.println("AHB!");
+                    wait.until(ExpectedConditions.elementToBeClickable(By.xpath("/html/body/div/div[1]/form/div/table/tbody[1]/tr/td[2]/table/tbody/tr/td[2]/select")));
+                    Select select = new Select(wait.until(ExpectedConditions.elementToBeClickable(By.xpath("/html/body/div/div[1]/form/div/table/tbody[1]/tr/td[2]/table/tbody/tr/td[2]/select"))));
+                    select.selectByIndex(indice);
+
+                    System.out.println("F");
+                    wait = new WebDriverWait(driver, Duration.ofSeconds(3));
+                    wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//*[@id=\"Footer\"]/table/tbody/tr/td[3]/table/tbody/tr/td[2]")));
+                    driver.findElement(By.xpath("//*[@id=\"Footer\"]/table/tbody/tr/td[3]/table/tbody/tr/td[2]")).click();
+
                     try {
-                        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[@id=\"Funcionario\"]")));
-                        Select select = new Select(wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//*[@id=\"Funcionario\"]"))));
-                        select.selectByIndex(indice);
-
-                        System.out.println("F");
-                        wait = new WebDriverWait(driver, Duration.ofSeconds(3));
-                        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//*[@id=\"Footer\"]/table/tbody/tr/td[3]/table/tbody/tr/td[2]")));
-                        driver.findElement(By.xpath("//*[@id=\"Footer\"]/table/tbody/tr/td[3]/table/tbody/tr/td[2]")).click();
-
                         wait = new WebDriverWait(driver, Duration.ofSeconds(3));
                         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("pdfviewer")));
-
                         String attribute = driver.findElement(By.id("pdfviewer")).getAttribute("src");
                         driver.get(attribute);
                         driver.navigate().back();
-
                         String title = driver.getTitle();
                         System.out.println("title " + title);
-
                         boolean boolx = false;
                         boolean boolx1 = false;
                         boolean boolx2 = false;
@@ -320,28 +333,38 @@ public class Feriados {
                                     boolx2 = listOfFiles[j].getAbsolutePath().contains(".tmp");
                                 }
                             } catch (Exception ex) {
-
+                                Logger.getLogger(Feriados.class.getName()).log(Level.SEVERE, null, ex);
                             }
                         }
 
                         File absoluteFile = listOfFiles[0].getAbsoluteFile();
 
-                        System.out.println("absoluteFile " + absoluteFile);
-
-                        PDDocument document = PDDocument.load(absoluteFile);
-
-                        PDFTextStripper stripper = new PDFTextStripper();
-                        String text = stripper.getText(document);
-
-                        document.close();
-
-//                        System.out.println(text);
+                        PDDocument document = null;
+                        boolean bool = true;
+                        while (bool) {
+                            try {
+                                System.out.println("absoluteFile " + absoluteFile);
+                                document = PDDocument.load(absoluteFile);
+                                bool = false;
+                            } catch (Exception ex) {
+//                                Logger.getLogger(Feriados.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                        }
+                        String text = "";
+                        while (text.equals("")) {
+                            try {
+                                PDFTextStripper stripper = new PDFTextStripper();
+                                text = stripper.getText(document);
+                                document.close();
+                            } catch (Exception ex) {
+//                                Logger.getLogger(Feriados.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                        }
+                        //                        System.out.println(text);
                         String[] split1 = text.trim().split("\n");
-
                         String fecha = "";
                         String rutt = "";
                         String fechaComprobante = "";
-
                         for (int j = 0; j < split1.length - 13; j++) {
                             String name = split1[j];
                             if (name.contains("Fecha:")) {
@@ -364,31 +387,23 @@ public class Feriados {
                                 System.out.println(substring);
                             }
                         }
-
                         int length1 = split1.length;
                         String name = split1[length1 - 14];
                         System.out.println("name " + name);
-
                         String[] ult = name.trim().split(" ");
-
                         int saldoHab = 0;
                         int diasProg = 0;
-
                         int largo = ult.length;
-
                         saldoHab = Integer.parseInt(ult[largo - 2]);
                         diasProg = Integer.parseInt(ult[largo - 1]);
                         fechaComprobante = ult[largo - 8];
-
                         Personas persona = new Personas();
-
                         persona.setRut(rutt);
                         persona.setFecha(fecha);
                         persona.setDiasProg(diasProg);
                         persona.setSaldoHab(saldoHab);
                         persona.setFechaComprobante(fechaComprobante);
                         persona.setFechaInicio(fechasInicio.get(0));
-
                         System.out.println("-------------------------------");
                         System.out.println(persona.getRut());
                         System.out.println(persona.getFecha());
@@ -397,26 +412,37 @@ public class Feriados {
                         System.out.println(persona.getFechaComprobante());
                         System.out.println(persona.getFechaInicio());
                         System.out.println("-------------------------------");
-
                         arrPersonas.add(persona);
                         System.out.println("Saldo Habil " + saldoHab);
                         System.out.println(diasProg + "Dias Programados ");
                         System.out.println("fecha de comprobante" + fechaComprobante);
-
                         VentanaPrincipal.info.setText(rutt);
 
-                        while (folder.listFiles().length != 0) {
-                            System.out.println("folder " + folder);
-                            FileUtils.cleanDirectory(folder);
-
+                        boolean boolc = true;
+                        while (folder.listFiles().length != 0 || boolc) {
+                            try {
+                                System.out.println("folder " + folder);
+                                FileUtils.cleanDirectory(folder);
+                                boolc = false;
+                            } catch (Exception ex) {
+                                Logger.getLogger(Feriados.class.getName()).log(Level.SEVERE, null, ex);
+                            }
                         }
-                    } catch (IOException ex) {
-                        Logger.getLogger(Feriados.class
-                                .getName()).log(Level.SEVERE, null, ex);
+                    } catch (Exception ex) {
+                        if (!ex.toString().contains("by By.id: pdfviewer ")) {
+                            Logger.getLogger(Feriados.class.getName()).log(Level.SEVERE, null, ex);
+                        }
                     }
                 });
             } catch (Exception ex) {
-                System.out.println("ex " + ex);
+
+                Logger.getLogger(Feriados.class.getName()).log(Level.SEVERE, null, ex);
+
+//                if (ex.toString().contains("By.xpath: //*[@id=\"Funcionario\"]")) {
+//                    driver.quit();
+//                    System.exit(0);
+//                }
+
                 q++;
 
                 File folder = new File(System.getProperty("user.dir") + "\\PDF");
@@ -431,14 +457,14 @@ public class Feriados {
 
             //break;
         }
-        
+
         driver.quit();
-        
+
         return arrPersonas;
     }
-//---------------------------------------------------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------------------------------------------------
 
-//-----------------------------------------------------------------------------------------------------------------------
+    //-----------------------------------------------------------------------------------------------------------------------
     public static ArrayList<PersonasInicio> transformarExcelaArray(String path) throws FileNotFoundException, IOException {
         System.out.println("path " + path);
         ArrayList<PersonasInicio> arrPersonasInicio = new ArrayList<>();
@@ -594,7 +620,7 @@ public class Feriados {
         chromeOptionsMap.put("plugins.always_open_pdf_externally", true);
         chromeOptionsMap.put("download.default_directory", System.getProperty("user.dir") + "\\PDF");
         options.setExperimentalOption("prefs", chromeOptionsMap);
-        options.addArguments("--headless");
+        //options.addArguments("--headless");
 
         WebDriverManager.chromedriver().setup();
         WebDriver driver = new ChromeDriver(options);
