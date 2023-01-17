@@ -211,9 +211,11 @@ public class Feriados {
 
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[@id=\"SubBarraMenu2_2\"]/tbody/tr/td[7]/a")));
         driver.findElement(By.xpath("//*[@id=\"SubBarraMenu2_2\"]/tbody/tr/td[7]/a")).click();
+        
+        System.out.println("arrPersonasListado.size() " + arrPersonasListado.size());
 
         int length = 0;
-        for (int q = 0; q < arrPersonasListado.size(); q++) {
+        for (int q = 132; q < arrPersonasListado.size(); q++) {
 
             if (aviso == false) {
                 VentanaPrincipal.info.setText("Proceso interrumpido !");
@@ -229,7 +231,7 @@ public class Feriados {
 //                    Logger.getLogger(Feriados.class.getName()).log(Level.SEVERE, null, ex);
                 }
 
-                if (q == 0) {
+                if (q == 132) {
                     wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[@id=\"Funcionario\"]")));
                     String text = driver.findElement(By.xpath("//*[@id=\"Funcionario\"]")).getText();
                     //*[@id="CodigoFuncionario"]
@@ -296,11 +298,17 @@ public class Feriados {
                 System.out.println("fechasInicio.size() " + fechasInicio.size());
 
                 indicesIguales.stream().forEach((Integer indice) -> {
+                    try {
+                        driver.switchTo().frame("Contenido");
+                    } catch (Exception ex) {
+//                    Logger.getLogger(Feriados.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+
                     System.out.println(indice);
 
                     System.out.println("AHB!");
-                    wait.until(ExpectedConditions.elementToBeClickable(By.xpath("/html/body/div/div[1]/form/div/table/tbody[1]/tr/td[2]/table/tbody/tr/td[2]/select")));
-                    Select select = new Select(wait.until(ExpectedConditions.elementToBeClickable(By.xpath("/html/body/div/div[1]/form/div/table/tbody[1]/tr/td[2]/table/tbody/tr/td[2]/select"))));
+                    wait.until(ExpectedConditions.elementToBeClickable(By.id("Funcionario")));
+                    Select select = new Select(wait.until(ExpectedConditions.elementToBeClickable(By.id("Funcionario"))));
                     select.selectByIndex(indice);
 
                     System.out.println("F");
@@ -442,7 +450,6 @@ public class Feriados {
 //                    driver.quit();
 //                    System.exit(0);
 //                }
-
                 q++;
 
                 File folder = new File(System.getProperty("user.dir") + "\\PDF");
@@ -620,7 +627,7 @@ public class Feriados {
         chromeOptionsMap.put("plugins.always_open_pdf_externally", true);
         chromeOptionsMap.put("download.default_directory", System.getProperty("user.dir") + "\\PDF");
         options.setExperimentalOption("prefs", chromeOptionsMap);
-        //options.addArguments("--headless");
+        options.addArguments("--headless");
 
         WebDriverManager.chromedriver().setup();
         WebDriver driver = new ChromeDriver(options);
